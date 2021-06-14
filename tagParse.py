@@ -7,12 +7,19 @@ DEBUG = False
 #Argument Parser Strings
 VERSION = '0.01'
 DEFAULT_PLC_LABEL = "PLC1"
+DEFAULT_SAVE_FILE = "CrimsExport.csv"
+DEFAULT_OPEN_FILE = "RSLImport.csv"
 CLI_PROGRAM_DESC = \
     """This program handles the batch processing of CSV export data from the LPA RSLogix 5000 tag scheme and prepares it
-     for importation into RedLion Edge Controllers for Vail's Lift Data SCADA Network."""
-OPEN_ARG_DESC = "This is the RSL Export CSV file to be opened include complete file path"
-SAVE_ARG_DESC = "This is the Crimson Import CSV file to be save include complete file path"
-PLC_LABEL_DESC = "This sets the plc label used in Crimson's addressing scheme, Default is {}".format(DEFAULT_PLC_LABEL)
+ for importation into RedLion Edge Controllers for Vail's Lift Data SCADA Network."""
+OPEN_ARG_DESC = "This is the RSL Export CSV file to be opened include complete file path, Default is {}"\
+    .format(DEFAULT_OPEN_FILE)
+SAVE_ARG_DESC = "This is the Crimson Import CSV file to be save include complete file path, Default is {}"\
+    .format(DEFAULT_SAVE_FILE)
+PLC_LABEL_DESC = "This sets the plc label used in Crimson's addressing scheme, Default is {}"\
+    .format(DEFAULT_PLC_LABEL)
+MERGE_DESC = """This flag allows for the new tag data to be merged with an existing CSV file so that it will be a 
+complete file upon import"""
 
 
 
@@ -25,9 +32,10 @@ def globalOperations():
     ch.setFormatter(formatter)
     logger.addHandler(handler)
     parser = argparse.ArgumentParser(description=CLI_PROGRAM_DESC)
-    parser.add_argument('-o', '--open', required=True, help=OPEN_ARG_DESC)
-    parser.add_argument('-s', '--save', required=True, help=SAVE_ARG_DESC)
+    parser.add_argument('open', help=OPEN_ARG_DESC, default=DEFAULT_OPEN_FILE)
+    parser.add_argument('-s', '--save', help=SAVE_ARG_DESC, default=DEFAULT_SAVE_FILE)
     parser.add_argument('-p','--plclabel', default=DEFAULT_PLC_LABEL, help=PLC_LABEL_DESC)
+    parser.add_argument('-m', '--merge', help=MERGE_DESC)
     parsedArgs = parser.parse_args()
     return logger, parsedArgs
 
@@ -156,7 +164,7 @@ class CrimsTagTableHandler:
 #Program Handling Functions
 def csvImporter(openFilename):
     with open(openFilename, 'r', newline='') as csvImportFile:
-        dialect = csv.Sniffer().sniff(csvImportFile.read(1024))
+        # dialect = csv.Sniffer().sniff(csvImportFile.read(1024))
         csvImportFile.seek(0)
         AlarmTable = RSLTagTableHandler('Alarm')
         BypassTable = RSLTagTableHandler('Bypass')
